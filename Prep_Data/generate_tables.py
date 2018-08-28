@@ -6,20 +6,6 @@ import ast
 import pandas as pd
 from fuzzywuzzy import process
 
-def _splitDataFrameList(df,target_column):
-    '''THIS FUNCTION IS USED TO SPLIT THE ARTIST TOUR INTO ROWS FOR THE
-    RAW EVENTS DATA_FRAM'''
-
-    def splitListToRows(row,row_accumulator,target_column):
-        split_row = row[target_column]
-        for s in split_row:
-            new_row = row.to_dict()
-            new_row[target_column] = s
-            row_accumulator.append(new_row)
-    new_rows = []
-    df.apply(splitListToRows,axis=1,args = (new_rows,target_column))
-    new_df = pd.DataFrame(new_rows)
-    return new_df
 
 def make_artist_df(colection = 'artist'):
     '''THIS FUNCTION COMPLIES THE ARTIST DATA FRAME FROM THE MOGO DATABASE
@@ -35,27 +21,6 @@ def make_artist_df(colection = 'artist'):
 
     artist_df = data.astype({'artist_id':int}, inplace=True)
     return artist_df
-
-def _make_events_df_raw(artist_df, states):
-    '''THIS FUNCTION MAKES A RAW DATA FRAME IT IS USED THIS RAW DataFrame
-    IS THE PASED THROUGH THE ____ FUNCTION TO MAKE A VENUES DATAFRAME AND
-    A FINISHED EVENTS DATA FRAME. WHEN DOING A TRIAN TEST SPLIT SPLIT AFTER
-    THIS FUNCTION THE VENUE ID'S WILL NOT BE HERE BUT A UNIQUE NAME CALLED
-    venueidentifer'''
-    def splitDataFrameList(df,target_column):
-        '''THIS FUNCTION IS USED TO SPLIT THE ARTIST TOUR INTO ROWS FOR THE
-        RAW EVENTS DATA_FRAM'''
-
-        def splitListToRows(row,row_accumulator,target_column):
-            split_row = row[target_column]
-            for s in split_row:
-                new_row = row.to_dict()
-                new_row[target_column] = s
-                row_accumulator.append(new_row)
-        new_rows = []
-        df.apply(splitListToRows,axis=1,args = (new_rows,target_column))
-        new_df = pd.DataFrame(new_rows)
-        return new_df
 
 
 def make_events_df_raw(artist_df, states):
@@ -122,41 +87,7 @@ def make_events_df_raw(artist_df, states):
                     if venue_name in dct:
                         events_raw.at[i, 'venue_name'] = dct[venue_name]
 
-        '''state_events = data[data['region'] == state]
-        city_events = state_events[state_events['city'] == city]
-        venues_names = set(city_events['venue_name'])
-        conversion_dct = {}
-        things_maped = []
-        for venue_name in venues_names:
-            if len(venue_names) == 1:
-                continue
-            if venue_name in things_maped:
-                continue
-            alt_name, prob = process.extract(venue, venues_names, limit = 2)[1]
-            if prob > threshold:
-                if len(venue) <= len(alt_name):
-                    conversion_dct[alt_name] = venue_name
-                    things_maped
-                else:
-                    conversion_dct[venue] = alt_name
-                    venue_names = venue_names.remove(venue)
-        venue_names = list(set(city_events['venue_name']))
-        targets = venue_names.copy()
-
-        finish = False
-        while finish == False:
-            finish = True
-            for i, word in enumerate(targets):
-                if word in conversion_dct:
-                    finish = False
-                    targets[i] = conversion_dct[word]
-        conversion2_dct = dict(zip(venue_names, targets))
-        print(conversion2_dct)
-
-        for i, row in city_events.iterrows():
-            venue_name = row['venue_name']
-            if venue_name in conversion2_dct:
-                data.at[i, 'venue_name'] = conversion2_dct[venue_name]'''
+        
         return events_raw
 
     event_raw = artist_df.copy()
@@ -226,6 +157,7 @@ def make_venue_df(data):
                                         .apply(lambda x: make_nans(x))
     venue_data['venue_genre'] = venue_data['venue_genre']\
                                         .apply(lambda x: make_nans(x))
+    venue_data = venue_data[~venue_data.latitude.isnull()]
     return venue_data
 
 def make_conversion_dictionarys(venue_df):
@@ -256,7 +188,8 @@ def make_events_df(events_raw, venues_df):
     #id_to_name, name_to_id = make_conversion_dictionarys(venues_df)
     #events = add_venue_id_to_events(events, name_to_id)
     #return events
-    events = events.join(venues_df.set_index('venue_id'), on='venue_id')
+    return events
+    events = events.join(venues_df.set_index('venue_id'), on='venue_id', how = 'inner')
     return events
 
 
@@ -275,10 +208,6 @@ def generate_data_from_colection(artist_filepath, events_filepath,
     id_to_name, name_to_id =make_conversion_dictionarys(venue_df)
     print('Step 4')
     events_df = add_venue_id_to_events(events_df_raw, name_to_id)
-    venue = venue[~venue.latitude.isnull()]
-    events = events[~events.latitude.isnull()]
-    venue_df.to_csv(venue_filepath)
-    events_df.to_csv(events_filepath)
 
     return artist_df, events_df, venue_df
 
