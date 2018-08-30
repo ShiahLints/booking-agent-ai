@@ -24,14 +24,10 @@ class data_processer(object):
 
         if self.artists_df is None:
             self.artists_df = self.make_artist_df()
-        print('step one')
         if self.events_df_raw is None:
             self.events_df_raw = self.make_events_df_raw(self.artists_df)
-        print('step two')
         self.venues_df = self.make_venue_df(self.events_df_raw)
-        print('step three')
         self.events_df = self.make_events_df(self.events_df_raw, self.venues_df)
-        print('done')
 
     def return_tables(self):
         '''THIS FUNCTION RETURNS THE MASTER TABLES'''
