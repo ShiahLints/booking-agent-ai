@@ -10,7 +10,6 @@ from fuzzywuzzy import process
 class data_processer(object):
     """docstring for data_processing making splits."""
     def __init__(self, artist_df= None, events_df_raw = None):
-
         self.artists_df = artist_df
         self.events_df_raw = events_df_raw
         self.events_df = None
@@ -25,10 +24,14 @@ class data_processer(object):
 
         if self.artists_df is None:
             self.artists_df = self.make_artist_df()
+        print('step one')
         if self.events_df_raw is None:
             self.events_df_raw = self.make_events_df_raw(self.artists_df)
+        print('step two')
         self.venues_df = self.make_venue_df(self.events_df_raw)
+        print('step three')
         self.events_df = self.make_events_df(self.events_df_raw, self.venues_df)
+        print('done')
 
     def return_tables(self):
         '''THIS FUNCTION RETURNS THE MASTER TABLES'''
@@ -45,7 +48,8 @@ class data_processer(object):
         data_raw = pd.DataFrame(list(artist_info.find()))
         data = data_raw.rename({'id':'artist_id', 'image_url':'artist_image'\
                      ,'name':'artist_name', 'thumb_url': 'artist_thumb',
-                     'url':'artist_url', 'facebook_page_url': 'artist_facebook'}\
+                     'url':'artist_url', 'facebook_page_url': 'artist_facebook',
+                     'bio': 'artist_bio', 'genre': 'artist_genre'}\
                      , axis = 1).copy()
 
         artist_df = data.astype({'artist_id':int}, inplace=True)
@@ -57,6 +61,7 @@ class data_processer(object):
         A FINISHED EVENTS DATA FRAME. WHEN DOING A TRIAN TEST SPLIT SPLIT AFTER
         THIS FUNCTION THE VENUE ID'S WILL NOT BE HERE BUT A UNIQUE NAME CALLED
         venueidentifer'''
+
 
         events_raw = artist_df.copy()
         events_raw = events_raw[~artist_df.tour.isnull()]
@@ -85,8 +90,6 @@ class data_processer(object):
 
         event_df['venueidentifer'] = event_df['venue_name'] +' '+event_df['city']\
         +' '+event_df['region']+' '+event_df['country']
-        event_df.rename({'bio':'artist_bio', 'genre':'artist_genre'}\
-                        ,axis = 'columns', inplace=True)
         event_df.drop('band_name', axis =1,inplace = True)
         return event_df
 
