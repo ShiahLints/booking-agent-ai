@@ -1,0 +1,98 @@
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>Venue Recommander</title>
+  <meta name="description" content="Quadratic Equation Solver">
+  <meta name="author" content="Galvanize DSI">
+  <script type="text/javascript" src="{{ url_for('static', filename='jquery.js') }}">  </script>
+  <script type="text/javascript" src="{{ url_for('static', filename='chosen.jquery.js') }}">  </script>
+  <link rel = 'stylesheet' href = '../static/chosen.css'></link>
+</head>
+
+<body>
+
+    <h1>This is a Venue Recommender for Artists on Tour</h1>
+    <p>This app will suggest venues for you to call</p>
+    <p>Please fill in the fields bellow</p>
+
+    <div>
+        <!-- These have id's so that later we can pull out data using js. -->
+        <p>The name of your band:<select id="artist_name" data-placeholder = 'Chose your band name' class = 'chosen-select-deselect' tabindex = 1>
+          <option value = ''></option>
+          {% for artist_name in artist_names %}
+          <option value = '{{ artist_name }}'>{{ artist_name }}</option>
+          {% endfor %}
+        </select></p>
+        <p>Do you want to search in WA, OR or CA?:<input id="state"></input></p>
+        <p>What city do you want to search in?:<input id="city"></input></p>
+        <p>What is the radius you want to search?:<input id="radius"></input></p>
+        <p>Please describe your band. If you aren’t in our data base or there is no band description this is required:
+        <input id="genre"></input></p>
+    </div>
+
+    <div>
+        <button type="button" id="search">Search!</button>
+    </div>
+
+    <div>
+        <!-- The span has an id so that later we can fill in the solution
+             using js. -->
+        <p> Our top recommendations are:<span id="solution"></span> </p>
+
+
+<script type="text/javascript">
+
+let get_input_values = function() {
+    let artist_name = $("select#artist_name").val()
+    let state = $("input#state").val()
+    let city = $("input#city").val()
+    let radius = $("input#radius").val()
+    let genre = $("input#genre").val()
+    return {'artist_name': artist_name,
+            'state': state,
+            'city': city,
+            'radius': parseInt(radius),
+            'artist_genre': genre}
+};
+
+let send_input_values = function(values) {
+    $.ajax({
+        url: '/search/',
+        contentType: "application/json; charset=utf-8",
+        type: 'POST',
+        data: JSON.stringify(values),
+        success: function (data) {
+            display_solutions(data);
+        },
+    });
+};
+
+let display_solutions = function(data) {
+    if ($('#solution').length) {
+      $('#solution').empty()
+    }
+    for(let venue of data){
+      $('#solution').append(
+        $('<div/>').append(
+          $('<p/>').text(venue['venue_name']+' '+venue['city'])
+
+
+        )
+      )
+    }
+};
+
+$(document).ready(function() {
+    $('.chosen-select-deselect').chosen()
+    $("button#search").click(function() {
+        let values = get_input_values();
+        send_input_values(values);
+    })
+
+})
+
+</script>
+
+</body>
+</html>
