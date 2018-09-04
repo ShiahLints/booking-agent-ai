@@ -6,10 +6,8 @@ sys.path.insert(0, '/Users/shiahlints/galvanize/FIXGITPROBLEM/booking-agent-ai/d
 #from math import radians, cos, sin, asin, sqrt
 
 
-venues = pd.read_pickle('/Users/shiahlints/galvanize/FIXGITPROBLEM/'+
-                        'booking-agent-ai/data/master_venues_df.p')
-cities = pd.read_csv('/Users/shiahlints/galvanize/FIXGITPROBLEM/'+
-                        'booking-agent-ai/data/uscitiesv1.4.csv')
+venues = pd.read_pickle('../data/master_venues_df.p')
+cities = pd.read_csv('../data/uscitiesv1.4.csv')
 
 class Venue_Finder(object):
     """this class finds the nearest venues to a point. Either another
